@@ -73,65 +73,59 @@ class Matrix:
         assert self.m == self.n
         return sum([self[i][i] for i in range(self.n)])
 
-    @staticmethod
-    def gauss_eli_aux(rows, k):
-        if k == len(rows) - 1:
-            return rows
-
-        for i in range(k, len(rows)):  # for each row
-            if rows[i][k] != 0:  # if the first entry is nonzero
-                rows[k], rows[i] = rows[i], rows[k]  # interchange with top row
-                break
-
-        for i in range(1 + k, len(rows)):  # for each row below the top row
-            mul = rows[i][k] / rows[k][k]
-            for j in range(len(rows[i])):
-                # subtract multiples of the top row from each row so that the pivot becomes zero
-                rows[i][j] -= mul * rows[k][j]
-
-        return Matrix.gauss_eli_aux(rows, k + 1)
-
     def gaussian_elimination(self):
-        return Matrix(Matrix.gauss_eli_aux(self.mat, 0))
+        """
+        transform the matrix to (row) echelon form
+        """
+        # perform the following on each row
+        for k in range(self.m):
 
-    @staticmethod
-    def gau_jor_eli_aux(rows, k):
-        if k == 0:
-            return rows
+            for i in range(k, self.m):  # for each row
+                if self[i][k] != 0:  # if the first entry is nonzero
+                    self[k], self[i] = self[i], self[k]  # interchange with top row
+                    break
 
-        if sum(rows[k]) != 0:
-            for i in range(k - 1, -1, -1):  # for each row above the bottom row
-                mul = rows[i][k] / rows[k][k]
-                for j in range(len(rows[i])):
-                    rows[i][j] -= mul * rows[k][j]
-
-        return Matrix.gau_jor_eli_aux(rows, k - 1)
+            for i in range(1 + k, self.m):  # for each row below the top row
+                mul = self[i][k] / self[k][k]
+                for j in range(len(self[i])):
+                    # subtract multiples of the top row from each row so that the pivot becomes zero
+                    self[i][j] -= mul * self[k][j]
 
     def gauss_jordan_elimination(self):
+        """
+        transform the matrix to reduced (row) echelon form
+        """
         # perform gaussian elimination
         self.gaussian_elimination()
 
         # multiply each nonzero row by the reciprocal of the pivot in that row
         for i in range(self.m):
             if sum(self[i]) != 0:
-                k = 0
+                k = 0  # pivot = self[i][k]
                 while self[i][k] == 0:
                     k += 1
-                p = self[i][k]
                 for j in range(k, self.n):
-                    self[i][j] /= p
+                    self[i][j] /= self[i][k]
 
         # make each pivot the only nonzero entry in that column
-        return Matrix(Matrix.gau_jor_eli_aux(self.mat, self.m - 1))
+        for k in range(self.m - 1, 0, -1):
+            if sum(self[k]) != 0:
+                for i in range(k - 1, -1, -1):  # for each row above the bottom row
+                    mul = self[i][k] / self[k][k]
+                    for j in range(len(self[i])):
+                        self[i][j] -= mul * self[k][j]
 
 
 def main():
     a = Matrix([[2, 1, 1, 5], [4, 1, 3, 9], [-2, 2, 1, 8]])
     b = Matrix([[1, 2, -1, 1, 3], [1, 1, -1, 1, 1], [1, 3, -1, 1, 5]])
     c = Matrix([[0, 2, 1, -8], [1, -2, -3, 0], [-1, 1, 2, 3]])
-    print(a.gauss_jordan_elimination())
-    print(b.gauss_jordan_elimination())
-    print(c.gauss_jordan_elimination())
+    a.gauss_jordan_elimination()
+    b.gauss_jordan_elimination()
+    c.gauss_jordan_elimination()
+    print(a)
+    print(b)
+    print(c)
 
 
 if __name__ == '__main__':
