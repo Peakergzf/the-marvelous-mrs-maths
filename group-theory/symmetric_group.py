@@ -1,5 +1,5 @@
 """
-Permutations
+Symmetric group Sn
 
 1. Conversions between different notations for permutations.
 2. Composition of permutations.
@@ -128,6 +128,28 @@ def cyclic_subgroup(perm, n):
     return subgroup, len(subgroup)
 
 
+def all_possible_permutations(n):
+    """
+    heap's algorithm
+    generate all possible permutations of n objects (all elements in Sn)
+    """
+    def generate(k, A):
+        if k == 1:
+            print(A)
+            return
+        generate(k - 1, A)
+        # If k is even, the final element is iteratively exchanged with each element index
+        # If k is odd, the final element is always exchanged with the first
+        for i in range(k - 1):
+            if k % 2 == 0:
+                A[i], A[k - 1] = A[k - 1], A[i]
+            else:
+                A[0], A[k - 1] = A[k - 1], A[0]
+            generate(k - 1, A)
+
+    generate(n, [i for i in range(1, n + 1)])
+
+
 def main():
     sg = [
         [[1, 3, 4], [2, 6], [5]],
@@ -138,6 +160,8 @@ def main():
         [[1], [2], [3], [4], [5], [6]]
     ]
     assert cyclic_subgroup([[1, 3, 4], [2, 6], [5]], 6) == (sg, 6)
+
+    all_possible_permutations(5)
 
 
 if __name__ == '__main__':
