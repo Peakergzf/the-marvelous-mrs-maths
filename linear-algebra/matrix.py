@@ -87,7 +87,7 @@ class Matrix:
 
             for i in range(1 + k, self.m):  # for each row below the top row
                 mul = self[i][k] / self[k][k]
-                for j in range(len(self[i])):
+                for j in range(self.n):
                     # subtract multiples of the top row from each row so that the pivot becomes zero
                     self[i][j] -= mul * self[k][j]
 
@@ -101,11 +101,12 @@ class Matrix:
         # multiply each nonzero row by the reciprocal of the pivot in that row
         for i in range(self.m):
             if sum(self[i]) != 0:
-                k = 0  # pivot = self[i][k]
+                k = 0
                 while self[i][k] == 0:
                     k += 1
+                pivot = self[i][k]
                 for j in range(k, self.n):
-                    self[i][j] /= self[i][k]
+                    self[i][j] /= pivot
 
         # make each pivot the only nonzero entry in that column
         for k in range(self.m - 1, 0, -1):
@@ -115,17 +116,63 @@ class Matrix:
                     for j in range(len(self[i])):
                         self[i][j] -= mul * self[k][j]
 
+    def is_invertible(self):
+        if self.m != self.n:
+            return False
+
+        copy = Matrix([[self[i][j] for j in range(self.n)] for i in range(self.m)])
+        copy.gauss_jordan_elimination()
+
+        return copy == Matrix.identity(self.n)
+
+    def inverse(self):
+        assert self.is_invertible()
+
+        # construct the partitioned matrix [A|I]
+        ai = Matrix([self[i] + Matrix.identity(self.n)[i] for i in range(self.m)])
+
+        # perform elementary row operations on [A|I]
+        # bringing A to its reduced echelon form I and [A|I] to some matrix [I|B]
+        ai.gauss_jordan_elimination()
+
+        # B = A^(-1)
+        return Matrix([[row[i] for i in range(self.m, 2 * self.m)] for row in ai])
+
+    def lu_decomposition(self):
+        # TODO why this works?
+        U = self
+        L = Matrix.identity(self.n)
+        for k in range(self.n):
+            for i in range(k + 1, self.n):
+                m = U[i][k] / U[k][k]
+                U[i][k] = 0
+                for j in range(k + 1, self.n):
+                    U[i][j] -= m * U[k][j]
+                L[i][k] = m
+        return L, U
+
 
 def main():
     a = Matrix([[2, 1, 1, 5], [4, 1, 3, 9], [-2, 2, 1, 8]])
-    b = Matrix([[1, 2, -1, 1, 3], [1, 1, -1, 1, 1], [1, 3, -1, 1, 5]])
-    c = Matrix([[0, 2, 1, -8], [1, -2, -3, 0], [-1, 1, 2, 3]])
     a.gauss_jordan_elimination()
+    assert [[int(entry) for entry in row] for row in a] == [[1, 0, 0, 0], [0, 1, 0, 3], [0, 0, 1, 2]]
+
+    b = Matrix([[1, 2, -1, 1, 3], [1, 1, -1, 1, 1], [1, 3, -1, 1, 5]])
     b.gauss_jordan_elimination()
+    assert [[int(entry) for entry in row] for row in b] == [[1, 0, -1, 1, -1], [0, 1, 0, 0, 2], [0, 0, 0, 0, 0]]
+
+    c = Matrix([[0, 2, 1, -8], [1, -2, -3, 0], [-1, 1, 2, 3]])
     c.gauss_jordan_elimination()
-    print(a)
-    print(b)
-    print(c)
+    assert [[int(entry) for entry in row] for row in c] == [[1, 0, 0, -4], [0, 1, 0, -5], [0, 0, 1, 2]]
+
+    assert (not Matrix([[1, 2, 4], [3, 1, 0], [5, 5, 8]]).is_invertible())
+
+    d = Matrix([[1, 1, 3], [0, 2, 0], [1, 4, 4]])
+    assert d.inverse() == Matrix([[4.0, 4.0, -3.0], [0.0, 0.5, 0.0], [-1.0, -1.5, 1.0]])
+
+    e = Matrix([[2, -2, -2], [0, -2, 2], [-1, 5, 2]])
+    assert e.lu_decomposition() == (Matrix([[1, 0, 0], [0, 1, 0], [-0.5, -2, 1]]),
+                                    Matrix([[2, -2, -2], [0, -2, 2], [0, 0, 5]]))
 
 
 if __name__ == '__main__':
