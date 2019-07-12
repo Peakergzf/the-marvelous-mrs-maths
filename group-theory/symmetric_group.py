@@ -159,28 +159,49 @@ def all_possible_permutations(n):
     heap's algorithm
     generate all possible permutations of n objects (all elements in Sn)
     """
-    def generate(k, A):
+
+    ans = []
+
+    # https://en.wikipedia.org/wiki/Heap%27s_algorithm#Details_of_the_algorithm
+
+    def generate(k, a):
         if k == 1:
-            print(A)
-            # perm = one_line_to_cycle([-1] + A, n)
-            # if is_even_permutation(perm):
-            #     print(perm)
+            ans.append([x for x in a])  # append the copied a
             return
-        generate(k - 1, A)
-        # If k is even, the final element is iteratively exchanged with each element index
-        # If k is odd, the final element is always exchanged with the first
+
+        generate(k - 1, a)
+
         for i in range(k - 1):
             if k % 2 == 0:
-                A[i], A[k - 1] = A[k - 1], A[i]
+                a[i], a[k - 1] = a[k - 1], a[i]
             else:
-                A[0], A[k - 1] = A[k - 1], A[0]
-            generate(k - 1, A)
+                a[0], a[k - 1] = a[k - 1], a[0]
+            generate(k - 1, a)
+
+    # # --------------------------------------------------------------------------
+    # # https://en.wikipedia.org/wiki/Heap%27s_algorithm#Proof
+    # # "the implementation below is not optimal but the analysis is easier"
+    # # (please refer to the diagram) the green cycle arrows are the redundant works
+
+    # def generate(k, a):
+    #     if k == 1:
+    #         ans.append([x for x in a])  # append the copied a
+    #         return
+    #
+    #     for i in range(k):
+    #         generate(k - 1, a)
+    #         if k % 2 == 0:
+    #             a[i], a[k - 1] = a[k - 1], a[i]
+    #         else:
+    #             a[0], a[k - 1] = a[k - 1], a[0]
 
     generate(n, [i for i in range(1, n + 1)])
 
+    return ans
+
 
 def main():
-    sg = [
+    subgroup = [
         [[1, 3, 4], [2, 6], [5]],
         [[1, 4, 3], [2], [5], [6]],
         [[1], [2, 6], [3], [4], [5]],
@@ -188,9 +209,9 @@ def main():
         [[1, 4, 3], [2, 6], [5]],
         [[1], [2], [3], [4], [5], [6]]
     ]
-    assert cyclic_subgroup([[1, 3, 4], [2, 6], [5]], 6) == (sg, 6)
+    assert cyclic_subgroup([[1, 3, 4], [2, 6], [5]], 6) == (subgroup, 6)
 
-    all_possible_permutations(5)
+    assert all_possible_permutations(3) == [[1, 2, 3], [2, 1, 3], [3, 1, 2], [1, 3, 2], [2, 3, 1], [3, 2, 1]]
 
     assert cycle_type([[1, 4, 3, 7, 10], [2], [5, 9], [6, 8]]) == [5, 2, 2, 1]
 
