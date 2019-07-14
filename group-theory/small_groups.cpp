@@ -4,18 +4,19 @@ using namespace std;
 typedef vector<int> vi;
 typedef vector<vi> vvi;
 
+// ===============================================================================================
 // generate all groups of order n (for small n) using batracking
 
-// constraints: property of the identity, sudoku property, group isomorphism
+// constraints: property of the identity, sudoku property
 
 // suppose the elements in a group are represented by 0, 1, 2, ..., n-1 and 0 is the identity, 
 // the binary operation is represented in cayley table:
 // table[i][j] = i * j, for i,j between 0 and n-1, and * is the binary operation
+// ===============================================================================================
 
 const int EMPTY = -1;
 
 set<vvi> visited;
-set<vvi> ans;
 
 void print_table(vvi table) {
     for (auto row : table) {
@@ -35,9 +36,10 @@ bool table_complete(vvi table) {
     // return true if the cayley table is complete (all entries are filled)
     // false otherwise
 
-    for (auto row : table) {
-        for (auto elem : row) {
-            if (elem == EMPTY) return false;
+    int n = table.size();
+    for (int i = 1; i < n; i++) {
+        for (int j = 1; j < n; j++) {
+            if (table[i][j] == EMPTY) return false;
         }
     }
     return true;
@@ -49,36 +51,28 @@ vi sudoku_property(vvi table, int row, int col) {
 
     int n = table.size();
 
-    vi avail(n);
-    iota(avail.begin(), avail.end(), 0); // initially {0, 1, ..., n - 1}
-
-    // remove all the values that already occur in the current row
+    vector<bool> avail(n, true);
     for (int i = 0; i < n; i++) {
-        if (table[row][i] != EMPTY) {
-            avail.erase(remove(avail.begin(), avail.end(), table[row][i]), avail.end());
-        }
-    }
-    // remove all the values that already occur in the current column
-    for (int i = 0; i < n; i++) {
-        if (table[i][col] != EMPTY) {
-            avail.erase(remove(avail.begin(), avail.end(), table[i][col]), avail.end());
-        }
+        if (table[i][col] != EMPTY) avail[table[i][col]] = false;
+        if (table[row][i] != EMPTY) avail[table[row][i]] = false;
     }
 
-    return avail;
+    vi avail_val = {};
+    for (int i = 0; i < n; i++) {
+        if (avail[i]) avail_val.push_back(i);
+    } 
 
+    return avail_val;
 }
 
 void rec(vvi table) {
     int n = table.size();
 
-    // stop searching if visited
     if (visited.count(table)) return;
 
     visited.insert(table);
 
-    // add to ans if table is complete
-    if (table_complete(table)) ans.insert(table);
+    if (table_complete(table)) print_table(table);
 
     for (int i = 1; i < n; i++) {
         for (int j = 1; j < n; j++) {
@@ -97,7 +91,7 @@ void rec(vvi table) {
 }
 
 void group_of_order(int n) {
-    vvi group = {};
+    vvi table = {};
     
     // using the property of the identity allows us to fill in 
     // the first row and the first column of the cayley table
@@ -111,23 +105,143 @@ void group_of_order(int n) {
     //     {3, EMPTY, EMPTY, EMPTY}
     // }
 
-    vi fst_row(n); // {1, 2, ..., n}
-    iota(fst_row.begin(), fst_row.end(), 0);
-    group.push_back(fst_row);
+    vi fst_row(n);
+    iota(fst_row.begin(), fst_row.end(), 0); // {0, 1, ..., n-1}
+    table.push_back(fst_row);
 
     for (int i = 1; i < n; i++) {
         vi row(n, EMPTY);
         row[0] = i; // each entry of the first column
-        group.push_back(row);
+        table.push_back(row);
     }
 
     // using backtracking to fill in the rest of the cayley table
-    rec(group);
+    rec(table);
 }
+
+// ===============================================================================================
+// check if two groups are isomorphic
+// by considering all possible renaming of one group and 
+//    comparing with the other to see if the renaming is consistent
+// ===============================================================================================
+
+bool comp(vi v1, vi v2) {
+    // used in rearranging entries in the cayley table for rename_elements
+    return v1[0] < v2[0];
+}
+
+vvi transpose(vvi g) {
+    // return the transpose of matrix g
+    int n = g.size();
+    vvi gt;
+    for (int i = 0; i < n; i++) {
+        vi row(n);
+        gt.push_back(row);
+
+        for (int j = 0; j < n; j++) {
+            gt[i][j] = g[j][i];
+        }
+    }
+    return gt;
+}
+
+vvi rename_elements(vi perm, vvi g) {
+    int n = g.size();
+    vvi g1;
+
+    // apply renaming based on the permutation
+    for (int i = 0; i < n; i++) {
+        vi row(n);
+        g1.push_back(row);
+
+        for (int j = 0; j < n; j++) {
+            g1[i][j] = perm[g[i][j]];
+        }
+    }
+
+    // rearrage the table s.t. the first row and column are both {0, 1, ..., n-1}
+
+    // sort rows
+    sort(g1.begin(), g1.end(), comp);
+    // sort columns (i.e. sort rows of g1 transpose)
+    vvi g1t = transpose(g1);
+    sort(g1t.begin(), g1t.end(), comp);
+    vvi g2 = transpose(g1t);
+
+    return g2;
+}
+
+bool same_group(vvi g, vvi h) {
+    // two groups are the same if they have the same cayley table
+    int n = g.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (g[i][j] != h[i][j]) return false;
+        }
+    }
+    return true;
+}
+
+bool isomorphic(vvi g, vvi h) {
+    // return true if g and h are isomorphic, false otherwise
+    //     by generating all possible ways to rename elements in g
+    //     and checking if it's the same as h
+    
+    // the renaming is based on each permutation
+    vi perm(n);
+    iota(perm.begin(), perm.end(), 0);
+    do {
+        vvi g1 = rename_elements(perm, g);
+
+        if (same_group(g1, h)) return true;
+
+    } while (next_permutation(v.begin(), v.end()));
+    
+    return false;
+}
+
+// ===============================================================================================
 
 int main() {
     group_of_order(4);
-    for (auto table : ans) print_table(table);
+    
+    vvi g1 = {
+        {0, 1, 2, 3},
+        {1, 0, 3, 2},
+        {2, 3, 0, 1},
+        {3, 2, 1, 0}
+    };
+
+    vvi g2 = {
+        {0, 1, 2, 3},
+        {1, 0, 3, 2},
+        {2, 3, 1, 0},
+        {3, 2, 0, 1}
+    };
+
+    vvi g3 = {
+        {0, 1, 2, 3},
+        {1, 2, 3, 0},
+        {2, 3, 0, 1},
+        {3, 0, 1, 2}
+    };
+
+    vvi g4 = {
+        {0, 1, 2, 3},
+        {1, 3, 0, 2},
+        {2, 0, 3, 1},
+        {3, 2, 1, 0}
+    };
+
+    // g2, g3, g4 are isomorphic to each other
+    // and they are not isomorphic to g1
+    vector<vvi> groups = {g2, g3, g4};
+    for (auto g : groups) {
+        assert(!isomorphic(g, g1));
+        for (auto h : groups) {
+            assert(isomorphic(g, h));
+        }
+    }
 
     return 0;
 }
