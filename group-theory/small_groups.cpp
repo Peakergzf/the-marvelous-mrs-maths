@@ -72,7 +72,10 @@ void rec(vvi table) {
 
     visited.insert(table);
 
-    if (table_complete(table)) print_table(table);
+    if (table_complete(table)) {
+        print_table(table);
+        return;
+    }
 
     for (int i = 1; i < n; i++) {
         for (int j = 1; j < n; j++) {
@@ -188,6 +191,7 @@ bool isomorphic(vvi g, vvi h) {
     //     and checking if it's the same as h
     
     // the renaming is based on each permutation
+    int n = g.size();
     vi perm(n);
     iota(perm.begin(), perm.end(), 0);
     do {
@@ -195,7 +199,7 @@ bool isomorphic(vvi g, vvi h) {
 
         if (same_group(g1, h)) return true;
 
-    } while (next_permutation(v.begin(), v.end()));
+    } while (next_permutation(perm.begin(), perm.end()));
     
     return false;
 }
