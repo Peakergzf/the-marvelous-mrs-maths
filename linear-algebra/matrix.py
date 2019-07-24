@@ -1,3 +1,6 @@
+import itertools
+
+
 class Matrix:
 
     def __init__(self, mat):
@@ -138,18 +141,26 @@ class Matrix:
         # B = A^(-1)
         return Matrix([[row[i] for i in range(self.m, 2 * self.m)] for row in ai])
 
-    def lu_decomposition(self):
-        # TODO why this works?
-        U = self
-        L = Matrix.identity(self.n)
-        for k in range(self.n):
-            for i in range(k + 1, self.n):
-                m = U[i][k] / U[k][k]
-                U[i][k] = 0
-                for j in range(k + 1, self.n):
-                    U[i][j] -= m * U[k][j]
-                L[i][k] = m
-        return L, U
+    def determinant(self):
+        assert self.m == self.n
+
+        def sgn(p):
+            # the signature of a permutation := (-1)^inversion number (i.e. the # of inversions)
+            inv = 0
+            for i in range(self.n):
+                for j in range(i + 1, self.m):
+                    if p[i] > p[j]:  # an inversion found
+                        inv += 1
+            return (-1) ** inv
+
+        det = 0
+        for perm in list(itertools.permutations([i for i in range(self.n)])):
+            prod = sgn(perm)
+            for i in range(self.n):
+                prod *= self[perm[i]][i]
+            det += prod
+
+        return det
 
 
 def main():
@@ -165,14 +176,14 @@ def main():
     c.gauss_jordan_elimination()
     assert [[int(entry) for entry in row] for row in c] == [[1, 0, 0, -4], [0, 1, 0, -5], [0, 0, 1, 2]]
 
-    assert (not Matrix([[1, 2, 4], [3, 1, 0], [5, 5, 8]]).is_invertible())
+    d = Matrix([[1, 2, 4], [3, 1, 0], [5, 5, 8]])
+    assert (not d.is_invertible())
 
-    d = Matrix([[1, 1, 3], [0, 2, 0], [1, 4, 4]])
-    assert d.inverse() == Matrix([[4.0, 4.0, -3.0], [0.0, 0.5, 0.0], [-1.0, -1.5, 1.0]])
+    e = Matrix([[1, 1, 3], [0, 2, 0], [1, 4, 4]])
+    assert e.inverse() == Matrix([[4.0, 4.0, -3.0], [0.0, 0.5, 0.0], [-1.0, -1.5, 1.0]])
 
-    e = Matrix([[2, -2, -2], [0, -2, 2], [-1, 5, 2]])
-    assert e.lu_decomposition() == (Matrix([[1, 0, 0], [0, 1, 0], [-0.5, -2, 1]]),
-                                    Matrix([[2, -2, -2], [0, -2, 2], [0, 0, 5]]))
+    assert d.determinant() == 0
+    assert e.determinant() == 2
 
 
 if __name__ == '__main__':
