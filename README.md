@@ -1,8 +1,10 @@
 # The Marvelous Mrs Maths
 
-This repo has the vibe from the show [The Marvelous Mrs. Maisel](https://en.wikipedia.org/wiki/The_Marvelous_Mrs._Maisel)
+**_This repo has the vibe from the show [The Marvelous Mrs. Maisel](https://en.wikipedia.org/wiki/The_Marvelous_Mrs._Maisel)_**
 
 ![Abraham "Abe" Weissman](/images/math_lec.gif)
+
+**_it really does..._**
 
 ## Group Theory
 
@@ -27,7 +29,7 @@ This repo has the vibe from the show [The Marvelous Mrs. Maisel](https://en.wiki
 * identity matrix
 * invertible matrix
 * trace
-* determinant
+* determinant [(leibniz formula)](https://en.wikipedia.org/wiki/Leibniz_formula_for_determinants)
 #### [Gaussian elimination](https://en.wikipedia.org/wiki/Gaussian_elimination)
 
 ## Number theory
@@ -38,4 +40,3 @@ This repo has the vibe from the show [The Marvelous Mrs. Maisel](https://en.wiki
 * [fast exponentiation](https://en.wikipedia.org/wiki/Modular_exponentiation#Left-to-right_binary_method)
 * [miller rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
 * [pollard's rho algorithm](https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm)
-
