@@ -14,7 +14,6 @@
 * [cyclic](https://en.wikipedia.org/wiki/Cyclic_group) subgroup in symmetric group
 * [parity](https://en.wikipedia.org/wiki/Parity_of_a_permutation) of a permutation
 * generate all possible permutation of n objects ([Heap's algorithm](https://en.wikipedia.org/wiki/Heap%27s_algorithm))
-![heap's algorithm](/images/heaps_algorithm_diagram.png)
 
 ##### Small groups
 * generate all groups of order n (for [small](https://en.wikipedia.org/wiki/List_of_small_groups) n) using backtracking
